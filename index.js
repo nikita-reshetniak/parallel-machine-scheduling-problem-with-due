@@ -2,15 +2,16 @@ let canvas = document.getElementById("canvas");
 let ctx = canvas.getContext("2d");
 let jobsInput = document.getElementById("jobs");
 let machinesInput = document.getElementById("machines");
+let dueDateInput = document.getElementById("dueDate");
 let solveBtn = document.getElementById("solve");
 let stopBtn = document.getElementById("stop");
-let TEMPERATURE = 0.1;
-let ABSOLUTE_ZERO = 0.0001;
-let COOLING_RATE = 0.999999;
-let JOBS = [[0, 0]];
+let TEMPERATURE = 10000; //0.1;
+let ABSOLUTE_ZERO = 0; //0.0001;
+let COOLING_RATE = 1; //0.999999;
+let JOBS = [[0, 0, 0]];
 let n;
 let m;
-let MACHINES = [];
+//let MACHINES = [];
 let schedule = [];
 let best = [];
 let best_cost = 0;
@@ -28,7 +29,7 @@ function getRndInt(n) {
 }
 
 function deep_copy(array, to) {
-    var i = array.length;
+    let i = array.length;
     while (i--) {
         to[i] = [array[i][0],array[i][1]];
     }
@@ -38,83 +39,77 @@ function acceptanceProbability(current_cost, neighbor_cost) {
     if (neighbor_cost < current_cost){
         return 1;
     }
-    return Math.exp((current_cost - neighbor_cost) / TEMPERATURE);
+    return Math.exp((current_cost - neighbor_cost) / (TEMPERATURE * 0.00001));
 }
 
 function init() {
-    n = parseInt(jobsInput.value); 
-    m = parseInt(machinesInput.value);
-    let equallySplit = Math.floor(n / m);
-    let k = 0;
+    getInputValues();
 
-    for (let i = 0; i < n; i++) {
-        JOBS[i] = [getRndInteger(1, 10), i + 1];
-    }
-
-    for (let i = 0; i < m - 1; i++) {
-        for (let j = 0; j < equallySplit; j++) {
-            schedule.push(JOBS[k]);
-            k++;
-        }
-        schedule.push([-1, -1]);
-    }
-
-    for (k; k < n; k++) {
-        schedule.push(JOBS[k]);
-    }
-
-    deep_copy(schedule, best);
-    best_cost = getCost(best);
+    createJobs(n);
+    firstSchedule(m);
+    best = [...schedule];
+    best_cost = getCost(createScheduleSetups(best));
     drawSchedule(best);
     startInterval = setInterval(solve, 10);
 }
 
 function getCost(array){
-    let cost = [];
-    let machine = 0;
+    let criterion = 0;
+    let line = 0;
 
-    for (let i = 0; i < m; i++) {
-        cost[i] = 0;
-    }
+    // for(let i = 0; i < array.length; i++){
+    //     if(array[i] < 0){
+    //         continue;
+    //     }
+    //     if(array[i] == 0){
+    //         criterion += 3;
+    //         continue;    
+    //     }
+    //     let element = JOBS.find(element => element[0] === array[i]);
+    //     criterion += element[1]*element[2];
+    //     //cost[machine] += element[1];
+    // }
+    // return criterion;
 
     for(let i = 0; i < array.length; i++){
-        if(array[i][0] < 0){
-            machine++;
+        if(array[i] < 0){
+            line = 0;
             continue;
         }
-
-        cost[machine] += array[i][0];
+        if(array[i] == 0){
+            line += 3;
+            continue;    
+        }
+        let element = JOBS.find(element => element[0] === array[i]);
+        criterion += Math.max(element[1] + line - d, 0);
+        line += element[1];
     }
-    return Math.max(...cost);
+    return criterion;
 }
 
 function solve() {
     if (TEMPERATURE > ABSOLUTE_ZERO) {
-        let current_cost = getCost(schedule);
-        // let k = getRndInt(n+m-1);
-        // let l = (k+1 + getRndInt(n-1+m)) % n+m-1;
-        // if (k > l) {
-        //     let tmp = k;
-        //     k = l;
-        //     l = tmp;
-        // }
-        // let neighbor = mutate2Opt(schedule, k, l);
+        let current_cost = getCost(createScheduleSetups(schedule));
 
         let neighbor = mutate(schedule);
-        let neighbor_cost = getCost(neighbor);
+        let neighbor_cost = getCost(createScheduleSetups(neighbor));
         if (Math.random() < acceptanceProbability(current_cost, neighbor_cost)) {
-            deep_copy(neighbor, schedule);
-            current_cost = getCost(schedule);
+            schedule = [...neighbor];
+            //deep_copy(neighbor, schedule);
+            current_cost = getCost(createScheduleSetups(schedule));
         }
-        // drawSchedule(schedule);
+
         if (current_cost < best_cost) {
-            deep_copy(schedule, best);
+            best = [...schedule];
+            //deep_copy(schedule, best);
             best_cost = current_cost;
+            console.log(best_cost);
             drawSchedule(best);
         }
-        TEMPERATURE *= COOLING_RATE;
-        // console.log(best_cost);
-        // console.log(current_cost);
+
+        drawTemperature();
+        TEMPERATURE -= COOLING_RATE;
+        
     } else {
         clearInterval(startInterval);
         console.log("Solved")   
@@ -123,13 +118,14 @@ function solve() {
 
 function mutate(array) {
     let neighbor = [];
-    deep_copy(array, neighbor);
+    neighbor = [...array];
+    //deep_copy(array, neighbor);
 
-    let k = getRndInt(n);
-    let l = getRndInt(n);
+    let k = getRndInt(n+m-1);
+    let l = getRndInt(n+m-1);
 
     while(k == l){
-        l = getRndInt(n);
+        l = getRndInt(n+m-1);
     }
     let t = neighbor[k];
     neighbor[k] = neighbor[l];
@@ -137,18 +133,42 @@ function mutate(array) {
     return neighbor;
 }
 
-// function mutate2Opt(route, i, j) {
-//     var neighbor = [];
-//     deep_copy(route, neighbor);
-//     while (i != j) {
-//         var t = neighbor[j];
-//         neighbor[j] = neighbor[i];
-//         neighbor[i] = t;
+function getInputValues(){
+    n = parseInt(jobsInput.value); 
+    m = parseInt(machinesInput.value);
+    d = parseInt(dueDateInput.value);
+}
 
-//         i = (i + 1) % n+m-1;
-//         if (i == j)
-//             break;
-//         j = (j - 1 + n+m-1) % n+m-1;
-//     }
-//     return neighbor;
-// }
+function createJobs(n){
+    for (let i = 0; i < n; i++) {
+        JOBS[i] = [i + 1, getRndInteger(3, 10), getRndInteger(1, 3)];
+    }
+}
+
+function firstSchedule(machines) {
+    for (let i = 0; i < JOBS.length; i++) {
+            schedule.push(JOBS[i][0]);
+        }
+    for (let i = 0; i < machines - 1; i++){
+        schedule.push(-1);
+    }
+}
+
+function createScheduleSetups(array) {
+    let scheduleSetups = [];
+    let setups = 0;
+    for (let i = 0; i < array.length; i++) {
+        scheduleSetups.push(array[i]);
+
+        if (array[i] > 0 && array[i + 1] > 0) {
+            let element = JOBS.find(element => element[0] === array[i]);
+            let nextElement = JOBS.find(nextElement => nextElement[0] === array[i + 1]);
+            if (element[2] != nextElement[2]) {
+                scheduleSetups.push(0);
+                setups += 1;
+            }
+        }
+    }
+    //console.log(setups);
+    return scheduleSetups;
+}

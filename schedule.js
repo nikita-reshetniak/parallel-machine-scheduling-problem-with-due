@@ -1,36 +1,41 @@
 
+let canvas = document.getElementById("canvas");
+let ctx = canvas.getContext("2d");
+
 let unit = 10;
-let height = 35;
-let startX = 85;
-let startY = canvas.height - 75;
-let radius = 5;
+let jobHeight = 35;
+let jobsStartX = 85;
+let jobsStartY = canvas.height - 75;
+let machinesX = 45;
+let machinesY = canvas.height - 75;
+let borderRadius = 5;
 
 function drawSchedule(array) {
     ctx.clearRect(0, 0, canvas.width, canvas.height);
-    drawAxes();
+    drawAxes(75, 50, 800, canvas.height - 30);
     
-    let jobX = startX;
-    let jobY = startY;
-    drawMachines(m);
+    let jobX = jobsStartX;
+    let jobY = jobsStartY;
+    drawMachines(m, machinesX, machinesY);
 
     for (let i = 0; i < array.length; i++) {
         if(array[i] < 0) {
-            jobX = startX;
+            jobX = jobsStartX;
             jobY -= 45;
             continue;
         }
         let element = JOBS.find(element => element[0] === array[i]);
         let nextElement = JOBS.find(nextElement => nextElement[0] === array[i+1]);
-        drawJob(jobX, jobY, unit * element[1] /* * element[2]*/, height, radius, element[0], element[2]);
-        jobX += unit * element[1]; //* element[2];
+        drawJob(jobX, jobY, unit * element[1], jobHeight, borderRadius, element[0], element[2]);
+        jobX += unit * element[1];
         if(nextElement) {
             if(element[2] != nextElement[2] && array[i+1] > 0) {
-                drawSetup(jobX, jobY, 30, height, radius);
+                drawSetup(jobX, jobY, 30, jobHeight, borderRadius);
                 jobX += 30;
             }
         }
     }
-    drawD(d, unit);
+    drawDue(d, jobsStartX, unit);
 }
 
 function drawJob(x, y, width, height, radius, number, family) {
@@ -87,19 +92,19 @@ function drawSetup(x, y, width, height, radius) {
     ctx.fillText("S", x + width/2 - 6, y + height/2);
 }
 
-function drawAxes(){
+function drawAxes(xStart, yStart, xEnd, yEnd){
     ctx.beginPath();
-    ctx.moveTo(75, 50);
-    ctx.lineTo(75, canvas.height - 30);
-    ctx.lineTo(600, canvas.height - 30);
+    ctx.moveTo(xStart, yStart);
+    ctx.lineTo(xStart, yEnd);
+    ctx.lineTo(xEnd, yEnd);
     ctx.stroke();
 }
 
-function drawMachines(n) {
-    let mY = startY;
+function drawMachines(n, x, yStart) {
+    let machineY = yStart;
     for(let i = 0; i < n; i++) {
-        drawMachine(startX - 40, mY + height / 2, i + 1);
-        mY -= 45;
+        drawMachine(x, machineY + jobHeight / 2, i + 1);
+        machineY -= 45;
     }
 }
 
@@ -109,18 +114,18 @@ function drawMachine(x, y, n) {
     ctx.fillText("M" + n, x, y);
 }
 
-function drawTemperature(){
-    ctx.clearRect(0, canvas.height - 20, canvas.width, canvas.height);
+function drawTemperature(t, x, y, clearStartX, clearStartY, clearEndX, clearEndY){
+    ctx.clearRect(x, y, clearStartX, clearStartY, clearEndX, clearEndY);
     ctx.fillStyle = "black";
     ctx.font = "16px 'Karla'";
     ctx.textBaseline = "middle";
-    ctx.fillText("Temperature: " + TEMPERATURE, 0, canvas.height - 10);
+    ctx.fillText("Temperature: " + t, 0, canvas.height - 10);
 }
 
-function drawD(x, unit) {
+function drawDue(x, jobsStartX, unit) {
     ctx.beginPath();
-    ctx.moveTo(x * unit + startX, 10);
-    ctx.lineTo(x * unit + startX, canvas.height - 10);
+    ctx.moveTo(x * unit + jobsStartX, 10);
+    ctx.lineTo(x * unit + jobsStartX, canvas.height - 10);
     ctx.lineWidth = 5;
     ctx.strokeStyle = "red";
     ctx.stroke();

@@ -1,20 +1,18 @@
-let canvas = document.getElementById("canvas");
-let ctx = canvas.getContext("2d");
+
 let jobsInput = document.getElementById("jobs");
 let machinesInput = document.getElementById("machines");
 let dueDateInput = document.getElementById("dueDate");
 let solveBtn = document.getElementById("solve");
 let stopBtn = document.getElementById("stop");
-let TEMPERATURE = 10000; //0.1;
-let ABSOLUTE_ZERO = 0; //0.0001;
-let COOLING_RATE = 1; //0.999999;
+let temperature = 10000; //0.1;
+const ABSOLUTE_ZERO = 0; //0.0001;
+const COOLING_RATE = 1; //0.999999;
 let JOBS = [[0, 0, 0]];
 let n;
 let m;
-//let MACHINES = [];
 let schedule = [];
 let best = [];
-let best_cost = 0;
+let bestСost = 0;
 let startInterval;
 
 solveBtn.addEventListener("click", init);
@@ -35,20 +33,20 @@ function deep_copy(array, to) {
     }
 }
 
-function acceptanceProbability(current_cost, neighbor_cost) {
-    if (neighbor_cost < current_cost){
+function acceptanceProbability(currentСost, neighborСost) {
+    if (neighborСost < currentСost){
         return 1;
     }
-    return Math.exp((current_cost - neighbor_cost) / (TEMPERATURE * 0.00001));
+    return Math.exp((currentСost - neighborСost) / (temperature * 0.00001));
 }
 
 function init() {
     getInputValues();
 
-    createJobs(n);
-    firstSchedule(m);
+    createJobs(n,JOBS);
+    createtSchedule(m);
     best = [...schedule];
-    best_cost = getCost(createScheduleSetups(best));
+    bestСost = getCost(addSetups(best));
     drawSchedule(best);
     startInterval = setInterval(solve, 10);
 }
@@ -56,20 +54,6 @@ function init() {
 function getCost(array){
     let criterion = 0;
     let line = 0;
-
-    // for(let i = 0; i < array.length; i++){
-    //     if(array[i] < 0){
-    //         continue;
-    //     }
-    //     if(array[i] == 0){
-    //         criterion += 3;
-    //         continue;    
-    //     }
-    //     let element = JOBS.find(element => element[0] === array[i]);
-    //     criterion += element[1]*element[2];
-    //     //cost[machine] += element[1];
-    // }
-    // return criterion;
 
     for(let i = 0; i < array.length; i++){
         if(array[i] < 0){
@@ -88,27 +72,25 @@ function getCost(array){
 }
 
 function solve() {
-    if (TEMPERATURE > ABSOLUTE_ZERO) {
-        let current_cost = getCost(createScheduleSetups(schedule));
+    if (temperature > ABSOLUTE_ZERO) {
+        let currentСost = getCost(addSetups(schedule));
 
         let neighbor = mutate(schedule);
-        let neighbor_cost = getCost(createScheduleSetups(neighbor));
-        if (Math.random() < acceptanceProbability(current_cost, neighbor_cost)) {
+        let neighborCost = getCost(addSetups(neighbor));
+        if (Math.random() < acceptanceProbability(currentСost, neighborCost)) {
             schedule = [...neighbor];
-            //deep_copy(neighbor, schedule);
-            current_cost = getCost(createScheduleSetups(schedule));
+            currentСost = getCost(addSetups(schedule));
         }
 
-        if (current_cost < best_cost) {
+        if (currentСost < bestСost) {
             best = [...schedule];
-            //deep_copy(schedule, best);
-            best_cost = current_cost;
-            console.log(best_cost);
+            bestСost = currentСost;
+            console.log(bestСost);
             drawSchedule(best);
         }
 
-        drawTemperature();
-        TEMPERATURE -= COOLING_RATE;
+        drawTemperature(temperature, 0, canvas.height - 20, canvas.width, canvas.height);
+        temperature -= COOLING_RATE;
         
     } else {
         clearInterval(startInterval);
@@ -119,7 +101,6 @@ function solve() {
 function mutate(array) {
     let neighbor = [];
     neighbor = [...array];
-    //deep_copy(array, neighbor);
 
     let k = getRndInt(n+m-1);
     let l = getRndInt(n+m-1);
@@ -139,13 +120,13 @@ function getInputValues(){
     d = parseInt(dueDateInput.value);
 }
 
-function createJobs(n){
+function createJobs(n, array){
     for (let i = 0; i < n; i++) {
-        JOBS[i] = [i + 1, getRndInteger(3, 10), getRndInteger(1, 3)];
+        array[i] = [i + 1, getRndInteger(3, 10), getRndInteger(1, 3)];
     }
 }
 
-function firstSchedule(machines) {
+function createtSchedule(machines) {
     for (let i = 0; i < JOBS.length; i++) {
             schedule.push(JOBS[i][0]);
         }
@@ -154,7 +135,7 @@ function firstSchedule(machines) {
     }
 }
 
-function createScheduleSetups(array) {
+function addSetups(array) {
     let scheduleSetups = [];
     let setups = 0;
     for (let i = 0; i < array.length; i++) {
@@ -169,6 +150,5 @@ function createScheduleSetups(array) {
             }
         }
     }
-    //console.log(setups);
     return scheduleSetups;
 }

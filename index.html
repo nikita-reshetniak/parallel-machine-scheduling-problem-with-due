@@ -10,15 +10,35 @@
 </head>
 <body>
     <div>
-        <canvas id="canvas" width="1200" height="500"></canvas>
+        <canvas id="canvas" width="900" height="500"></canvas>
     </div>
     <div id="settings">
-        <span>Zadania: </span>
-        <input id="jobs" type="number" value="100"> <br>
-        <span>Maszyny: </span>
-        <input id="machines" type="number" value="10"> <br>
-        <span>Termin: </span>
-        <input id="dueDate" type="number" value="50"> <br>
+        <table>
+            <tr>
+                <td><span>Jobs: </span></td>
+                <td><input id="jobs" type="number" value="10"> <br></td>
+            </tr>
+            <tr>
+                <td><span>Machines: </span></td>
+                <td><input id="machines" type="number" value="3"> <br></td>
+            </tr>
+            <tr>
+                <td><span>Due date: </span></td>
+                <td><input id="dueDate" type="number" value="20"> <br></td>
+            </tr>
+            <tr>
+                <td><span>Temperature: </span></td>
+                <td><input id="temperature" type="number" value="1000000"> <br></td>
+            </tr>
+            <tr>
+                <td><span>Cooling rate: </span></td>
+                <td><input id="coolingRate" type="number" value="0.01"> <br></td>
+            </tr>
+            <tr>
+                <td><span>Max iterations: </span></td>
+                <td><input id="maxIterations" type="number" value="1000"> <br></td>
+            </tr>
+        </table>
         <button id="solve">Solve</button>
         <button id="stop">Stop</button>
     </div>

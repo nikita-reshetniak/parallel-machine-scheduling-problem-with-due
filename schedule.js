@@ -114,12 +114,39 @@ function drawMachine(x, y, n) {
     ctx.fillText("M" + n, x, y);
 }
 
-function drawTemperature(t, x, y, clearStartX, clearStartY, clearEndX, clearEndY){
-    ctx.clearRect(x, y, clearStartX, clearStartY, clearEndX, clearEndY);
+function drawTemperature(t, x, y){
     ctx.fillStyle = "black";
     ctx.font = "16px 'Karla'";
     ctx.textBaseline = "middle";
-    ctx.fillText("Temperature: " + t, 0, canvas.height - 10);
+    ctx.fillText("Temperature: " + t, x, y);
+}
+
+function drawIteration(i, x, y){
+    ctx.fillStyle = "black";
+    ctx.font = "16px 'Karla'";
+    ctx.textBaseline = "middle";
+    ctx.fillText("Iteration: " + i, x, y);
+}
+
+function drawBestCost(cost, x, y){
+    ctx.fillStyle = "black";
+    ctx.font = "16px 'Karla'";
+    ctx.textBaseline = "middle";
+    ctx.fillText("Best cost: " + cost, x, y);
+}
+
+function drawSolved(x, y){
+    ctx.fillStyle = "limegreen";
+    ctx.font = "16px 'Karla'";
+    ctx.textBaseline = "middle";
+    ctx.fillText("SOLVED", x, y);
+}
+
+function drawStats(t, i, cost, x, y){
+    ctx.clearRect(x, canvas.height - 25, canvas.width, canvas.height)
+    drawTemperature(t, x, y);
+    drawIteration(i, x + 350, y);
+    drawBestCost(cost, x + 550, y);
 }
 
 function drawDue(x, jobsStartX, unit) {

@@ -2,11 +2,17 @@
 let jobsInput = document.getElementById("jobs");
 let machinesInput = document.getElementById("machines");
 let dueDateInput = document.getElementById("dueDate");
+let temperatureInput = document.getElementById("temperature");
+let coolingRateInput = document.getElementById("coolingRate");
+let maxIterationsInput = document.getElementById("maxIterations");
 let solveBtn = document.getElementById("solve");
 let stopBtn = document.getElementById("stop");
-let temperature = 10000; //0.1;
-const ABSOLUTE_ZERO = 0; //0.0001;
-const COOLING_RATE = 1; //0.999999;
+
+let temperature; // = 1000000;
+const ABSOLUTE_ZERO = 0;
+let coolingRate; // = 0.01;
+let maxIterations;
+let currentIteration = 1;
 let JOBS = [[0, 0, 0]];
 let n;
 let m;
@@ -34,10 +40,11 @@ function deep_copy(array, to) {
 }
 
 function acceptanceProbability(currentСost, neighborСost) {
-    if (neighborСost < currentСost){
+    if (neighborСost <= currentСost){
         return 1;
     }
-    return Math.exp((currentСost - neighborСost) / (temperature * 0.00001));
+    //console.log(Math.exp((currentСost - neighborСost) / (temperature * 0.00001)));
+    return Math.exp((currentСost - neighborСost) / (temperature));
 }
 
 function init() {
@@ -48,7 +55,7 @@ function init() {
     best = [...schedule];
     bestСost = getCost(addSetups(best));
     drawSchedule(best);
-    startInterval = setInterval(solve, 10);
+    startInterval = setInterval(solve, 1);
 }
 
 function getCost(array){
@@ -72,29 +79,34 @@ function getCost(array){
 }
 
 function solve() {
-    if (temperature > ABSOLUTE_ZERO) {
-        let currentСost = getCost(addSetups(schedule));
+    if (currentIteration <= maxIterations) {
+        if (temperature > ABSOLUTE_ZERO) {
+            let currentСost = getCost(addSetups(schedule));
+            console.log(currentСost);
 
-        let neighbor = mutate(schedule);
-        let neighborCost = getCost(addSetups(neighbor));
-        if (Math.random() < acceptanceProbability(currentСost, neighborCost)) {
-            schedule = [...neighbor];
-            currentСost = getCost(addSetups(schedule));
+            let neighbor = mutate(schedule);
+            let neighborCost = getCost(addSetups(neighbor));
+            if (Math.random() < acceptanceProbability(currentСost, neighborCost)) {
+                //console.log(true);
+                schedule = [...neighbor];
+                currentСost = getCost(addSetups(schedule));
+            }
+
+            if (currentСost < bestСost) {
+                best = [...schedule];
+                bestСost = currentСost;
+                //console.log(bestСost);
+                drawSchedule(best);
+            }
+
+            drawStats(temperature, currentIteration, bestСost, 100, canvas.height - 10);
+            temperature = temperature / (1 + coolingRate * temperature);
+            currentIteration++;
         }
-
-        if (currentСost < bestСost) {
-            best = [...schedule];
-            bestСost = currentСost;
-            console.log(bestСost);
-            drawSchedule(best);
-        }
-
-        drawTemperature(temperature, 0, canvas.height - 20, canvas.width, canvas.height);
-        temperature -= COOLING_RATE;
-        
     } else {
         clearInterval(startInterval);
-        console.log("Solved")   
+        drawSolved(canvas.width - 100, canvas.height - 10);
+        console.log("Solved");
     }
 }
 
@@ -118,6 +130,9 @@ function getInputValues(){
     n = parseInt(jobsInput.value); 
     m = parseInt(machinesInput.value);
     d = parseInt(dueDateInput.value);
+    temperature = parseInt(temperatureInput.value);
+    coolingRate = parseFloat(coolingRateInput.value);
+    maxIterations = parseInt(maxIterationsInput.value);
 }
 
 function createJobs(n, array){

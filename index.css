@@ -6,3 +6,33 @@ canvas{
 #settings{
     font-family: 'Karla';
 }
+
+button {
+    font-family: 'Karla';
+    display: inline-block;
+    padding: 6px 15px;
+    margin-top: 10px;
+    margin-right: 10px;
+    font-size: 16px;
+    cursor: pointer;
+    text-align: center;
+    text-decoration: none;
+    outline: none;
+    color: rgb(0, 0, 0);
+    background-color: rgb(213, 213, 213);
+    border: none;
+    border-radius: 10px;
+    box-shadow: 0 5px #999;
+  }
+  
+/*button:hover {background-color: rgb(171, 171, 171)}*/
+  
+  button:active {
+    background-color: rgb(171, 171, 171);
+    box-shadow: 0 2px #666;
+    transform: translateY(4px);
+  }
+
+  tr {
+    text-align: end;
+  }
